@@ -1,0 +1,185 @@
+[
+    {
+        "id": "c07dd58909ab57c9",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "a70f3d08aef0d97c",
+        "type": "twitter in",
+        "z": "c07dd58909ab57c9",
+        "twitter": "",
+        "tags": "#quantumcomputing",
+        "user": "false",
+        "name": "Listen to Public Tweets",
+        "inputs": 0,
+        "x": 140,
+        "y": 40,
+        "wires": [
+            [
+                "afc234d650834f9e",
+                "d63b18d.f29c4e8"
+            ]
+        ]
+    },
+    {
+        "id": "d1812161cd998499",
+        "type": "file",
+        "z": "c07dd58909ab57c9",
+        "name": "Write To a File",
+        "filename": "E:\\DevelopmentWorkspaces\\node-red-0.13.3\\amitava_projects\\tweets.txt",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 1200,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "afc234d650834f9e",
+        "type": "debug",
+        "z": "c07dd58909ab57c9",
+        "name": "Write Original Msg",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1170,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "9ca676cc8100a003",
+        "type": "function",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "func": "var links=\"\";\nvar a=\"\";\nvar count=global.get(\"count\")+1;\nglobal.set(\"count\", count);\n\nvar data = msg.tweet.created_at+\",\"+msg.tweet.user.screen_name+\",\"\n+msg.tweet.user.followers_count+\",\"+msg.sentiment.score;\nif (msg.payload.includes(\"http\")) {\n   links=\"Links:\"+msg.tweet.entities.urls[0].expanded_url;\n} \nif (msg.payload.includes(\"RT @\")) {\n   a=a+\";\"+\"Retweet\";\n} \nif (msg.payload.includes(\"Books\")) {\n   a=a+\";\"+\"Books\";\n} \nmsg.links=links;\nmsg.extra=\"msg: \"+count+\" : About: \"+a;\nmsg.csvrow=data;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set (\"count\",0);",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 260,
+        "wires": [
+            [
+                "563c506129ed74d7",
+                "d1812161cd998499"
+            ]
+        ]
+    },
+    {
+        "id": "563c506129ed74d7",
+        "type": "debug",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1170,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "3b80248db4f394ca",
+        "type": "inject",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            },
+            {
+                "p": "tweet",
+                "v": "{\"created_at\":\"Sun Sep 05 20:20:01 +0000 2021\",\"id\":1434612301487874000,\"id_str\":\"1434612301487874048\",\"text\":\"RT @sparrigan: Just realized that I've never really plugged this great book that gives a zero-maths intro to the deep core concepts behind…\",\"source\":\"<a href=\\\"http://twitter.com/download/android\\\" rel=\\\"nofollow\\\">Twitter for Android</a>\",\"truncated\":false,\"in_reply_to_status_id\":null,\"in_reply_to_status_id_str\":null,\"in_reply_to_user_id\":null,\"in_reply_to_user_id_str\":null,\"in_reply_to_screen_name\":null,\"user\":{\"id\":379710125,\"id_str\":\"379710125\",\"name\":\"Oday オデー\",\"screen_name\":\"zeeroday\",\"location\":\"Orbital Space \",\"url\":null,\"description\":\"Entangled between @UNIGE_en & @CERN ت. Serial learner @CERNideasquare. Quantum Tech, Art, Innovation. Levantine 🇱🇧🇨🇭\",\"translator_type\":\"regular\",\"protected\":false,\"verified\":false,\"followers_count\":407,\"friends_count\":2312,\"listed_count\":14,\"favourites_count\":2910,\"statuses_count\":4492,\"created_at\":\"Sun Sep 25 12:35:20 +0000 2011\",\"utc_offset\":null,\"time_zone\":null,\"geo_enabled\":true,\"lang\":null,\"contributors_enabled\":false,\"is_translator\":false,\"profile_background_color\":\"DAE5AB\",\"profile_background_image_url\":\"http://abs.twimg.com/images/themes/theme1/bg.png\",\"profile_background_image_url_https\":\"https://abs.twimg.com/images/themes/theme1/bg.png\",\"profile_background_tile\":true,\"profile_link_color\":\"02A3B9\",\"profile_sidebar_border_color\":\"000000\",\"profile_sidebar_fill_color\":\"87313F\",\"profile_text_color\":\"FA154B\",\"profile_use_background_image\":true,\"profile_image_url\":\"http://pbs.twimg.com/profile_images/996969960873320448/j7BrSYxE_normal.jpg\",\"profile_image_url_https\":\"https://pbs.twimg.com/profile_images/996969960873320448/j7BrSYxE_normal.jpg\",\"profile_banner_url\":\"https://pbs.twimg.com/profile_banners/379710125/1577792747\",\"default_profile\":false,\"default_profile_image\":false,\"following\":null,\"follow_request_sent\":null,\"notifications\":null,\"withheld_in_countries\":[]},\"geo\":null,\"coordinates\":null,\"place\":null,\"contributors\":null,\"retweeted_status\":{\"created_at\":\"Sun Sep 05 19:31:50 +0000 2021\",\"id\":1434600175419416600,\"id_str\":\"1434600175419416587\",\"text\":\"Just realized that I've never really plugged this great book that gives a zero-maths intro to the deep core concept… https://t.co/WT5wlGTjA8\",\"source\":\"<a href=\\\"https://mobile.twitter.com\\\" rel=\\\"nofollow\\\">Twitter Web App</a>\",\"truncated\":true,\"in_reply_to_status_id\":null,\"in_reply_to_status_id_str\":null,\"in_reply_to_user_id\":null,\"in_reply_to_user_id_str\":null,\"in_reply_to_screen_name\":null,\"user\":{\"id\":340219763,\"id_str\":\"340219763\",\"name\":\"Nicholas Harrigan\",\"screen_name\":\"sparrigan\",\"location\":null,\"url\":\"http://www.nicharrigan.com\",\"description\":\"\\\"Nic Harrigan once programmed a gigantic robot to play Pokemon Go in order to catch bonus animals anomalously located in low orbit.\\\"\",\"translator_type\":\"none\",\"protected\":false,\"verified\":false,\"followers_count\":432,\"friends_count\":212,\"listed_count\":35,\"favourites_count\":1567,\"statuses_count\":2328,\"created_at\":\"Fri Jul 22 10:11:43 +0000 2011\",\"utc_offset\":null,\"time_zone\":null,\"geo_enabled\":false,\"lang\":null,\"contributors_enabled\":false,\"is_translator\":false,\"profile_background_color\":\"C0DEED\",\"profile_background_image_url\":\"http://abs.twimg.com/images/themes/theme1/bg.png\",\"profile_background_image_url_https\":\"https://abs.twimg.com/images/themes/theme1/bg.png\",\"profile_background_tile\":false,\"profile_link_color\":\"1DA1F2\",\"profile_sidebar_border_color\":\"C0DEED\",\"profile_sidebar_fill_color\":\"DDEEF6\",\"profile_text_color\":\"333333\",\"profile_use_background_image\":true,\"profile_image_url\":\"http://pbs.twimg.com/profile_images/575770086411231234/m49THXk__normal.jpeg\",\"profile_image_url_https\":\"https://pbs.twimg.com/profile_images/575770086411231234/m49THXk__normal.jpeg\",\"profile_banner_url\":\"https://pbs.twimg.com/profile_banners/340219763/1449191466\",\"default_profile\":true,\"default_profile_image\":false,\"following\":null,\"follow_request_sent\":null,\"notifications\":null,\"withheld_in_countries\":[]},\"geo\":null,\"coordinates\":null,\"place\":null,\"contributors\":null,\"is_quote_status\":false,\"extended_tweet\":{\"full_text\":\"Just realized that I've never really plugged this great book that gives a zero-maths intro to the deep core concepts behind #quantum and #QuantumComputing. Highly recommend!\\n\\nhttps://t.co/QaARIU1V21\",\"display_text_range\":[0,198],\"entities\":{\"hashtags\":[{\"text\":\"quantum\",\"indices\":[124,132]},{\"text\":\"QuantumComputing\",\"indices\":[137,154]}],\"urls\":[{\"url\":\"https://t.co/QaARIU1V21\",\"expanded_url\":\"https://www.qisforquantum.org/\",\"display_url\":\"qisforquantum.org\",\"indices\":[175,198]}],\"user_mentions\":[],\"symbols\":[]}},\"quote_count\":0,\"reply_count\":1,\"retweet_count\":1,\"favorite_count\":3,\"entities\":{\"hashtags\":[],\"urls\":[{\"url\":\"https://t.co/WT5wlGTjA8\",\"expanded_url\":\"https://twitter.com/i/web/status/1434600175419416587\",\"display_url\":\"twitter.com/i/web/status/1…\",\"indices\":[117,140]}],\"user_mentions\":[],\"symbols\":[]},\"favorited\":false,\"retweeted\":false,\"possibly_sensitive\":false,\"filter_level\":\"low\",\"lang\":\"en\"},\"is_quote_status\":false,\"quote_count\":0,\"reply_count\":0,\"retweet_count\":0,\"favorite_count\":0,\"entities\":{\"hashtags\":[],\"urls\":[{\"url\":\"https://t.co/fEbtlcPPIo\",\"expanded_url\":\"https://youtu.be/IhledtjnJPc\",\"display_url\":\"youtu.be/IhledtjnJPc\",\"indices\":[70,93]}],\"user_mentions\":[{\"screen_name\":\"sparrigan\",\"name\":\"Nicholas Harrigan\",\"id\":340219763,\"id_str\":\"340219763\",\"indices\":[3,13]}],\"symbols\":[]},\"favorited\":false,\"retweeted\":false,\"filter_level\":\"low\",\"lang\":\"en\",\"timestamp_ms\":\"1630873201139\"}",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "DEBUG",
+        "payload": "RT @ipfconline1: remarkable #Robots learn faster with quantum technology   https://t.co/0XAbm6KgOj v/ @univienna  #QuantumComputing #AI #MachineLearning and it is so brave really!…",
+        "payloadType": "str",
+        "x": 110,
+        "y": 380,
+        "wires": [
+            [
+                "d63b18d.f29c4e8"
+            ]
+        ]
+    },
+    {
+        "id": "ac27ffb5.53d8",
+        "type": "switch",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "property": "sentiment.score",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "lt",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 3,
+        "x": 730,
+        "y": 300,
+        "wires": [
+            [
+                "9ca676cc8100a003"
+            ],
+            [
+                "9ca676cc8100a003"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "d63b18d.f29c4e8",
+        "type": "sentiment",
+        "z": "c07dd58909ab57c9",
+        "name": "Analyse Sentiment",
+        "property": "payload",
+        "x": 410,
+        "y": 220,
+        "wires": [
+            [
+                "ac27ffb5.53d8",
+                "afc234d650834f9e"
+            ]
+        ]
+    }
+]
