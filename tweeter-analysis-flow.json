@@ -19,8 +19,7 @@
         "y": 40,
         "wires": [
             [
-                "afc234d650834f9e",
-                "d63b18d.f29c4e8"
+                "e60d108334866f7a"
             ]
         ]
     },
@@ -34,8 +33,8 @@
         "createDir": false,
         "overwriteFile": "false",
         "encoding": "none",
-        "x": 1200,
-        "y": 260,
+        "x": 1160,
+        "y": 300,
         "wires": [
             []
         ]
@@ -45,7 +44,7 @@
         "type": "debug",
         "z": "c07dd58909ab57c9",
         "name": "Write Original Msg",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -62,18 +61,18 @@
         "type": "function",
         "z": "c07dd58909ab57c9",
         "name": "",
-        "func": "var links=\"\";\nvar a=\"\";\nvar count=global.get(\"count\")+1;\nglobal.set(\"count\", count);\n\nvar data = msg.tweet.created_at+\",\"+msg.tweet.user.screen_name+\",\"\n+msg.tweet.user.followers_count+\",\"+msg.sentiment.score;\nif (msg.payload.includes(\"http\")) {\n   links=\"Links:\"+msg.tweet.entities.urls[0].expanded_url;\n} \nif (msg.payload.includes(\"RT @\")) {\n   a=a+\";\"+\"Retweet\";\n} \nif (msg.payload.includes(\"Books\")) {\n   a=a+\";\"+\"Books\";\n} \nmsg.links=links;\nmsg.extra=\"msg: \"+count+\" : About: \"+a;\nmsg.csvrow=data;\nreturn msg;",
+        "func": "//filter out the retweets - if tweet.retweeted_status exists\n\n\nvar $commonWords = ['i','a','about','an','and','are','as','at','be','by','com','de','en','for','from','how','in','is','it','la','of','on','or','that','the','this','to','was','what','when','where','who','will','with','und','the','www'];\nvar wordsToLookFor = ['drive', 'research', 'thrill', 'learn', 'new', 'expertise', 'qubit', 'transmon', 'course', 'security', 'fast','software', 'future', 'workforce', 'accurate', 'next', 'complex', 'medicine', 'empower', 'skill', 'transform', 'business'];\n\nvar a=\"\";\nvar count=global.get(\"count\")+1;\nglobal.set(\"count\", count);\n\nvar data = msg.tweet.created_at+\",\"+msg.tweet.user.screen_name+\",\"\n+msg.tweet.user.followers_count+\",\"+msg.sentiment.score;\nvar $text = msg.payload;\n// Convert to lowercase\n$text = $text.toLowerCase();\nvar links = $text.match(/\\bhttps?:\\/\\/\\S+/gi);\n// replace unnesessary chars. leave only chars, numbers and space\n$text = $text.replace(/[^\\w\\d ]/g, '');\nvar words = $text.split(' ');\n\n// remove $commonWords\nkeywords1 = words.filter(function (word) {\n    return $commonWords.indexOf(word) === -1;\n});\n\nkeywords = [];\n  for (var i = 0; i < keywords1.length; i++) {\n    if (keywords.indexOf(keywords1[i])==-1) {\n      keywords.push(keywords1[i]);\n    }\n  }\n\nkeywords = [];\nfor (var j = wordsToLookFor.length - 1; j >= 0; --j) {\n    if ($text.indexOf(wordsToLookFor[j]) != -1) {\n         // str contains wordsToLookFor[i]\n         keywords.push(wordsToLookFor[j]);\n    }\n}\n\n\nif (msg.payload.includes(\"http\")) {\n   links1=msg.tweet.entities.urls;\n  for (i = 0; i < links1.length; i++) {\n      links.push(links1[i].url);\n      links.push(links1[i].expanded_url);\n  }\n} \nif (msg.payload.includes(\"RT @\")) {\n   a=a+\";\"+\"Retweet\";\n} \nif (msg.payload.includes(\"Books\")) {\n   a=a+\";\"+\"Books\";\n} \n\nvar output={};\noutput.msgNumber=count;\noutput.timestamp=msg.tweet.created_at;\noutput.messageText=msg.payload;\noutput.topic=msg.topic;\noutput.sentimetScore=msg.sentiment.score;\noutput.links=links;\noutput.extra=\"msg: \"+count+\" : About: \"+a;\noutput.csvrow=data;\noutput.keywords=keywords;\noutput.source=msg.tweet.source;\nmsg.output=output;\n\n\n\n\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set (\"count\",0);",
         "finalize": "",
         "libs": [],
-        "x": 920,
-        "y": 260,
+        "x": 740,
+        "y": 220,
         "wires": [
             [
                 "563c506129ed74d7",
-                "d1812161cd998499"
+                "dcce60b1f7756a1a"
             ]
         ]
     },
@@ -90,15 +89,15 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1170,
-        "y": 320,
+        "x": 1130,
+        "y": 260,
         "wires": []
     },
     {
         "id": "3b80248db4f394ca",
         "type": "inject",
         "z": "c07dd58909ab57c9",
-        "name": "",
+        "name": "for DEBUG",
         "props": [
             {
                 "p": "payload"
@@ -111,6 +110,11 @@
                 "p": "tweet",
                 "v": "{\"created_at\":\"Sun Sep 05 20:20:01 +0000 2021\",\"id\":1434612301487874000,\"id_str\":\"1434612301487874048\",\"text\":\"RT @sparrigan: Just realized that I've never really plugged this great book that gives a zero-maths intro to the deep core concepts behind…\",\"source\":\"<a href=\\\"http://twitter.com/download/android\\\" rel=\\\"nofollow\\\">Twitter for Android</a>\",\"truncated\":false,\"in_reply_to_status_id\":null,\"in_reply_to_status_id_str\":null,\"in_reply_to_user_id\":null,\"in_reply_to_user_id_str\":null,\"in_reply_to_screen_name\":null,\"user\":{\"id\":379710125,\"id_str\":\"379710125\",\"name\":\"Oday オデー\",\"screen_name\":\"zeeroday\",\"location\":\"Orbital Space \",\"url\":null,\"description\":\"Entangled between @UNIGE_en & @CERN ت. Serial learner @CERNideasquare. Quantum Tech, Art, Innovation. Levantine 🇱🇧🇨🇭\",\"translator_type\":\"regular\",\"protected\":false,\"verified\":false,\"followers_count\":407,\"friends_count\":2312,\"listed_count\":14,\"favourites_count\":2910,\"statuses_count\":4492,\"created_at\":\"Sun Sep 25 12:35:20 +0000 2011\",\"utc_offset\":null,\"time_zone\":null,\"geo_enabled\":true,\"lang\":null,\"contributors_enabled\":false,\"is_translator\":false,\"profile_background_color\":\"DAE5AB\",\"profile_background_image_url\":\"http://abs.twimg.com/images/themes/theme1/bg.png\",\"profile_background_image_url_https\":\"https://abs.twimg.com/images/themes/theme1/bg.png\",\"profile_background_tile\":true,\"profile_link_color\":\"02A3B9\",\"profile_sidebar_border_color\":\"000000\",\"profile_sidebar_fill_color\":\"87313F\",\"profile_text_color\":\"FA154B\",\"profile_use_background_image\":true,\"profile_image_url\":\"http://pbs.twimg.com/profile_images/996969960873320448/j7BrSYxE_normal.jpg\",\"profile_image_url_https\":\"https://pbs.twimg.com/profile_images/996969960873320448/j7BrSYxE_normal.jpg\",\"profile_banner_url\":\"https://pbs.twimg.com/profile_banners/379710125/1577792747\",\"default_profile\":false,\"default_profile_image\":false,\"following\":null,\"follow_request_sent\":null,\"notifications\":null,\"withheld_in_countries\":[]},\"geo\":null,\"coordinates\":null,\"place\":null,\"contributors\":null,\"retweeted_status\":{\"created_at\":\"Sun Sep 05 19:31:50 +0000 2021\",\"id\":1434600175419416600,\"id_str\":\"1434600175419416587\",\"text\":\"Just realized that I've never really plugged this great book that gives a zero-maths intro to the deep core concept… https://t.co/WT5wlGTjA8\",\"source\":\"<a href=\\\"https://mobile.twitter.com\\\" rel=\\\"nofollow\\\">Twitter Web App</a>\",\"truncated\":true,\"in_reply_to_status_id\":null,\"in_reply_to_status_id_str\":null,\"in_reply_to_user_id\":null,\"in_reply_to_user_id_str\":null,\"in_reply_to_screen_name\":null,\"user\":{\"id\":340219763,\"id_str\":\"340219763\",\"name\":\"Nicholas Harrigan\",\"screen_name\":\"sparrigan\",\"location\":null,\"url\":\"http://www.nicharrigan.com\",\"description\":\"\\\"Nic Harrigan once programmed a gigantic robot to play Pokemon Go in order to catch bonus animals anomalously located in low orbit.\\\"\",\"translator_type\":\"none\",\"protected\":false,\"verified\":false,\"followers_count\":432,\"friends_count\":212,\"listed_count\":35,\"favourites_count\":1567,\"statuses_count\":2328,\"created_at\":\"Fri Jul 22 10:11:43 +0000 2011\",\"utc_offset\":null,\"time_zone\":null,\"geo_enabled\":false,\"lang\":null,\"contributors_enabled\":false,\"is_translator\":false,\"profile_background_color\":\"C0DEED\",\"profile_background_image_url\":\"http://abs.twimg.com/images/themes/theme1/bg.png\",\"profile_background_image_url_https\":\"https://abs.twimg.com/images/themes/theme1/bg.png\",\"profile_background_tile\":false,\"profile_link_color\":\"1DA1F2\",\"profile_sidebar_border_color\":\"C0DEED\",\"profile_sidebar_fill_color\":\"DDEEF6\",\"profile_text_color\":\"333333\",\"profile_use_background_image\":true,\"profile_image_url\":\"http://pbs.twimg.com/profile_images/575770086411231234/m49THXk__normal.jpeg\",\"profile_image_url_https\":\"https://pbs.twimg.com/profile_images/575770086411231234/m49THXk__normal.jpeg\",\"profile_banner_url\":\"https://pbs.twimg.com/profile_banners/340219763/1449191466\",\"default_profile\":true,\"default_profile_image\":false,\"following\":null,\"follow_request_sent\":null,\"notifications\":null,\"withheld_in_countries\":[]},\"geo\":null,\"coordinates\":null,\"place\":null,\"contributors\":null,\"is_quote_status\":false,\"extended_tweet\":{\"full_text\":\"Just realized that I've never really plugged this great book that gives a zero-maths intro to the deep core concepts behind #quantum and #QuantumComputing. Highly recommend!\\n\\nhttps://t.co/QaARIU1V21\",\"display_text_range\":[0,198],\"entities\":{\"hashtags\":[{\"text\":\"quantum\",\"indices\":[124,132]},{\"text\":\"QuantumComputing\",\"indices\":[137,154]}],\"urls\":[{\"url\":\"https://t.co/QaARIU1V21\",\"expanded_url\":\"https://www.qisforquantum.org/\",\"display_url\":\"qisforquantum.org\",\"indices\":[175,198]}],\"user_mentions\":[],\"symbols\":[]}},\"quote_count\":0,\"reply_count\":1,\"retweet_count\":1,\"favorite_count\":3,\"entities\":{\"hashtags\":[],\"urls\":[{\"url\":\"https://t.co/WT5wlGTjA8\",\"expanded_url\":\"https://twitter.com/i/web/status/1434600175419416587\",\"display_url\":\"twitter.com/i/web/status/1…\",\"indices\":[117,140]}],\"user_mentions\":[],\"symbols\":[]},\"favorited\":false,\"retweeted\":false,\"possibly_sensitive\":false,\"filter_level\":\"low\",\"lang\":\"en\"},\"is_quote_status\":false,\"quote_count\":0,\"reply_count\":0,\"retweet_count\":0,\"favorite_count\":0,\"entities\":{\"hashtags\":[],\"urls\":[{\"url\":\"https://t.co/fEbtlcPPIo\",\"expanded_url\":\"https://youtu.be/IhledtjnJPc\",\"display_url\":\"youtu.be/IhledtjnJPc\",\"indices\":[70,93]}],\"user_mentions\":[{\"screen_name\":\"sparrigan\",\"name\":\"Nicholas Harrigan\",\"id\":340219763,\"id_str\":\"340219763\",\"indices\":[3,13]}],\"symbols\":[]},\"favorited\":false,\"retweeted\":false,\"filter_level\":\"low\",\"lang\":\"en\",\"timestamp_ms\":\"1630873201139\"}",
                 "vt": "json"
+            },
+            {
+                "p": "lang",
+                "v": "en",
+                "vt": "str"
             }
         ],
         "repeat": "",
@@ -118,13 +122,13 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "DEBUG",
-        "payload": "RT @ipfconline1: remarkable #Robots learn faster with quantum technology   https://t.co/0XAbm6KgOj v/ @univienna  #QuantumComputing #AI #MachineLearning and it is so brave really!…",
+        "payload": "RT @ipfconline1: remarkable #Robots learn faster with quantum technology   https://t.co/0XAbm6KgOj v/ @univienna  #QuantumComputing #AI #MachineLearning and it is so brave really!…RT @philjaurigue: Yes. Bad actors are always devising new ways to breach systems. Choose your #CyberSecurity partner wisely. @sabreonpoint…Understand #QuantumComputing and how it will transform business in this two-course program from MIT xPRO. Learn from MIT fac…Empowering #QuantumJobs : Top Five Skills For #QuantumCoding That Will Be In Demand I India Times #India… https://t.co/10dNtfzDVj  The next big step in computing will be so complex that we will need computers to act as the UI, where we ask for outcomes…I think the combination of tissue engineering and AI will play a big role in the future of personalized medicine.… https://t.co/YQywEvehVC",
         "payloadType": "str",
-        "x": 110,
+        "x": 120,
         "y": 380,
         "wires": [
             [
-                "d63b18d.f29c4e8"
+                "e60d108334866f7a"
             ]
         ]
     },
@@ -132,7 +136,7 @@
         "id": "ac27ffb5.53d8",
         "type": "switch",
         "z": "c07dd58909ab57c9",
-        "name": "",
+        "name": "Positive and Neutral Tweets only",
         "property": "sentiment.score",
         "propertyType": "msg",
         "rules": [
@@ -155,8 +159,8 @@
         "checkall": "false",
         "repair": false,
         "outputs": 3,
-        "x": 730,
-        "y": 300,
+        "x": 460,
+        "y": 220,
         "wires": [
             [
                 "9ca676cc8100a003"
@@ -173,12 +177,72 @@
         "z": "c07dd58909ab57c9",
         "name": "Analyse Sentiment",
         "property": "payload",
-        "x": 410,
-        "y": 220,
+        "x": 610,
+        "y": 120,
         "wires": [
             [
                 "ac27ffb5.53d8",
                 "afc234d650834f9e"
+            ]
+        ]
+    },
+    {
+        "id": "e60d108334866f7a",
+        "type": "switch",
+        "z": "c07dd58909ab57c9",
+        "name": "english only",
+        "property": "lang",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "en",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 1,
+        "x": 390,
+        "y": 120,
+        "wires": [
+            [
+                "d63b18d.f29c4e8"
+            ]
+        ]
+    },
+    {
+        "id": "dcce60b1f7756a1a",
+        "type": "json",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "property": "output",
+        "action": "str",
+        "pretty": true,
+        "x": 730,
+        "y": 360,
+        "wires": [
+            [
+                "cf122e2076286d9c"
+            ]
+        ]
+    },
+    {
+        "id": "cf122e2076286d9c",
+        "type": "function",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "func": "msg.payload=msg.output;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 500,
+        "wires": [
+            [
+                "d1812161cd998499"
             ]
         ]
     }
