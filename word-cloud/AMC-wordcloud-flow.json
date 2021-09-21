@@ -1,0 +1,275 @@
+[
+    {
+        "id": "9e62dd90595aa9c6",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "2dfb3a51.a9b666",
+        "type": "function",
+        "z": "9e62dd90595aa9c6",
+        "name": "Word counter",
+        "func": "\nfunction wordCounter(string, minLen) {\n    var $commonWords = ['i','a','about','an','and','are','as','at','be','by','com','de','en','for','from','how','in','is','it','la','of','on','or','that','the','this','to','was','what','when','where','who','will','with','und','the','www','quantum','quantumcomputing','amitava'];\n    minLen = (!minLen || minLen < 1) ? 1 : minLen;\n    var words = string.replace(/[^a-zA-Z ]/g, \"\").split(/\\s/);\n    keywords1 = words.filter(function (word) {\n        return $commonWords.indexOf(word) === -1;\n    });\n    words=keywords1;\n    var freqMap = {};\n    var data = [];\n    for (var i = 0; i < words.length; i++) {\n        w = words[i].trim();\n        if(w.length < minLen) continue;\n        if (!freqMap[w]) {\n            freqMap[w] = {\n                name: w,\n                weight: 0\n            }\n            data.push(freqMap[w]);\n        }\n        freqMap[w].weight += 1;\n    }\n    msg.words = data;\n    return data;\n}\nconst minChars = 3;\nconst caseSensitive = false;\nif(caseSensitive){\n    msg.text = msg.payload();\n} else {\n    msg.text = msg.payload.toLowerCase();\n}\nmsg.payload = wordCounter(msg.text, 3);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 200,
+        "wires": [
+            [
+                "70083979.21da08"
+            ]
+        ]
+    },
+    {
+        "id": "6f92db4c.c832b4",
+        "type": "inject",
+        "z": "9e62dd90595aa9c6",
+        "name": "",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 160,
+        "wires": [
+            [
+                "591dd2bd.6bd00c"
+            ]
+        ]
+    },
+    {
+        "id": "bf1cb46a.397f08",
+        "type": "inject",
+        "z": "9e62dd90595aa9c6",
+        "name": "",
+        "props": [
+            {
+                "p": "payload",
+                "v": "",
+                "vt": "date"
+            },
+            {
+                "p": "topic",
+                "v": "",
+                "vt": "string"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 280,
+        "wires": [
+            [
+                "5c8d32e6.72469c",
+                "a2eacbd8ca425f3c"
+            ]
+        ]
+    },
+    {
+        "id": "5dd149e6.4b62d8",
+        "type": "debug",
+        "z": "9e62dd90595aa9c6",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "591dd2bd.6bd00c",
+        "type": "ui_button",
+        "z": "9e62dd90595aa9c6",
+        "name": "",
+        "group": "4c4b1ee9.c4294",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "label": "Farpoint",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "PICARD \t\t\tYou will agree, Data, that \t\t\tStarfleet's instructions are \t\t\tdifficult?  \t\t\t\t\tDATA \t\t\tDifficult ... how so? Simply \t\t\tsolve the mystery of Farpoint \t\t\tStation.  \t\t\t\t\tPICARD \t\t\t\t(smiles) \t\t\tAs simple as that.  \t\t\t\t\tTROI \t\t\tFarpoint Station. Even the name \t\t\tsounds mysterious.  \t\t\t\t\tPICARD \t\t\tThe problem, Data, is that another \t\t\tlife form built that base. How \t\t\tdo I negotiate a friendly \t\t\tagreement for Starfleet to use \t\t\tit while at the same time snoop \t\t\taround finding how and why they \t\t\tbuilt it?   DATA \t\t\tInquiry ... the word snoop ... ?  \t\t\t\t\tPICARD \t\t\tData, how can you be programmed \t\t\tas a virtual encyclopedia of human \t\t\tinformation without knowing a \t\t\tsimple word like snoop?  \t\t\t\t\tDATA \t\t\tPossibility ... a kind of human \t\t\tbehavior I was not designed to \t\t\temulate?   PICARD \t\t\tIt means 'to spy, to sneak' ...  \t\t\t\t\tDATA \t\t\t\t(interrupting; \t\t\t\t delighted) \t\t\tAh! To seek covertly, to go \t\t\tstealthily, to slink, slither ...  \t\t\t\t\tPICARD \t\t\t\t(wanting to cut it off) \t\t\tExactly, yes   \t\t\t\t\tDATA \t\t\tto glide, creep, skulk, \t\t\tpussyfoot, gumshoe     TROI \t\t\tCaptain ... I'm sensing a ... a \t\t\tpowerful mind ..    WORF \t\t\tSomething strange on the detector \t\t\tcircuits ..   DATA \t\t\tIt registers as solid, Captain...  \t\t\t\t\tTROI \t\t\tOr an incredibly powerful \t\t\tforcefield. But if we collide \t\t\twith either    PICARD \t\t\t\t(to Conn) \t\t\tGo to Condition Yellow. And shut \t\t\toff that damned noise    WORF \t\t\tShields and deflectors, up, sir",
+        "payloadType": "str",
+        "topic": "Encounter at farpoint",
+        "topicType": "str",
+        "x": 180,
+        "y": 200,
+        "wires": [
+            [
+                "2dfb3a51.a9b666"
+            ]
+        ]
+    },
+    {
+        "id": "5c8d32e6.72469c",
+        "type": "ui_button",
+        "z": "9e62dd90595aa9c6",
+        "name": "",
+        "group": "4c4b1ee9.c4294",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "label": "Lorem ipsum",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean bibendum erat ac justo sollicitudin, quis lacinia ligula fringilla. Pellentesque hendrerit, nisi vitae posuere condimentum, lectus urna accumsan libero, rutrum commodo mi lacus pretium erat. Phasellus pretium ultrices mi sed semper. Praesent ut tristique magna. Donec nisl tellus, sagittis ut tempus sit amet, consectetur eget erat. Sed ornare gravida lacinia. Curabitur iaculis metus purus, eget pretium est laoreet ut. Quisque tristique augue ac eros malesuada, vitae facilisis mauris sollicitudin. Mauris ac molestie nulla, vitae facilisis quam. Curabitur placerat ornare sem, in mattis purus posuere eget. Praesent non condimentum odio. Nunc aliquet, odio nec auctor congue, sapien justo dictum massa, nec fermentum massa sapien non tellus. Praesent luctus eros et nunc pretium hendrerit. In consequat et eros nec interdum. Ut neque dui, maximus id elit ac, consequat pretium tellus. Nullam vel accumsan lorem",
+        "payloadType": "str",
+        "topic": "Lorem ipsum",
+        "topicType": "str",
+        "x": 170,
+        "y": 240,
+        "wires": [
+            [
+                "2dfb3a51.a9b666"
+            ]
+        ]
+    },
+    {
+        "id": "ee0fd3aa.af7d1",
+        "type": "ui_text",
+        "z": "9e62dd90595aa9c6",
+        "group": "4c4b1ee9.c4294",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Selected",
+        "format": "AMC {{msg.topic}} {{msg.weight}}",
+        "layout": "row-spread",
+        "x": 550,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "70083979.21da08",
+        "type": "ui_template",
+        "z": "9e62dd90595aa9c6",
+        "group": "4c4b1ee9.c4294",
+        "name": "",
+        "order": 0,
+        "width": "0",
+        "height": "0",
+        "format": "\n<div>\n\n    <figure class=\"highcharts-figure\">\n        <div id=\"container\"></div>\n        <p class=\"highcharts-description\">\n            A word cloud for node-red by Amitava Chakraborty\n        </p>\n    </figure>\n\n</div>\n\n\n<script>\n\n\n(function(scope) {\n    scope.$watch('msg', function(msg) {\n        if (msg) {\n            if(msg.clicked){\n                //not sure why but clicked items come back here!\n                //just ignore it if msg.clicked is true!\n                return;\n            }\n            updateCloud(scope, msg.payload, msg.topic);\n        }\n    });\n  \n  \n    function updateCloud(scope, data, topic) {\n\n        Highcharts.chart('container', {\n            accessibility: {\n                screenReaderSection: {\n                    beforeChartFormat: '<h5>{chartTitle}</h5>' +\n                        '<div>{chartSubtitle}</div>' +\n                        '<div>{chartLongdesc}</div>' +\n                        '<div>{viewTableButton}</div>'\n                }\n            },\n            series: [{\n                type: 'wordcloud',\n                data: data,\n                description: 'ABC',\n                name: 'Occurrences',\n                point: {\n                    events: {\n                        click: function () {\n                            scope.send({\n                                topic: this.options.name,\n                                payload: this,\n                                clicked: true,\n                            });\n                        }\n                    }\n                }\n            }],\n            title: {\n                text: 'Wordcloud of ' + topic\n            }\n        });    \n         \n    }  \n      \n      \n})(scope);\n\n\n</script>\n\n\n\n<!-- by Steve-Mcl 2020-06-12 -->",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 540,
+        "y": 240,
+        "wires": [
+            [
+                "ee0fd3aa.af7d1",
+                "5dd149e6.4b62d8"
+            ]
+        ]
+    },
+    {
+        "id": "77779e96.f1d6d",
+        "type": "ui_template",
+        "z": "9e62dd90595aa9c6",
+        "group": "4c4b1ee9.c4294",
+        "name": "CDNs",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<script src=\"https://code.highcharts.com/highcharts.js\"></script>\n<script src=\"https://code.highcharts.com/modules/accessibility.js\"></script>\n<script src=\"https://code.highcharts.com/modules/wordcloud.js\"></script>\n<script src=\"https://code.highcharts.com/modules/exporting.js\"></script>\n<script src=\"https://code.highcharts.com/modules/export-data.js\"></script>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "global",
+        "x": 530,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0ba3f0127d4a26b4",
+        "type": "file in",
+        "z": "9e62dd90595aa9c6",
+        "name": "TweeterText",
+        "filename": "E:\\DevelopmentWorkspaces\\node-red-0.13.3\\amitava_projects\\tweetmsgs.txt",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 190,
+        "y": 420,
+        "wires": [
+            [
+                "2dfb3a51.a9b666"
+            ]
+        ]
+    },
+    {
+        "id": "a2eacbd8ca425f3c",
+        "type": "ui_button",
+        "z": "9e62dd90595aa9c6",
+        "name": "Tweeter Text",
+        "group": "4c4b1ee9.c4294",
+        "order": 2,
+        "width": "0",
+        "height": "0",
+        "passthru": true,
+        "label": "Tweeter Text",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "Tweeter Text",
+        "topicType": "str",
+        "x": 170,
+        "y": 500,
+        "wires": [
+            [
+                "0ba3f0127d4a26b4"
+            ]
+        ]
+    },
+    {
+        "id": "4c4b1ee9.c4294",
+        "type": "ui_group",
+        "name": "Default",
+        "tab": "d3f58331.4840f",
+        "order": 1,
+        "disp": true,
+        "width": "14",
+        "collapse": false
+    },
+    {
+        "id": "d3f58331.4840f",
+        "type": "ui_tab",
+        "name": "Home",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]

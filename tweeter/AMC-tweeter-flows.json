@@ -1,0 +1,616 @@
+[
+    {
+        "id": "c07dd58909ab57c9",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "a70f3d08aef0d97c",
+        "type": "twitter in",
+        "z": "c07dd58909ab57c9",
+        "d": true,
+        "twitter": "",
+        "tags": "#quantumcomputing",
+        "user": "false",
+        "name": "Listen to Public Tweets",
+        "inputs": 0,
+        "x": 140,
+        "y": 40,
+        "wires": [
+            [
+                "afc234d650834f9e",
+                "e60d108334866f7a"
+            ]
+        ]
+    },
+    {
+        "id": "d1812161cd998499",
+        "type": "file",
+        "z": "c07dd58909ab57c9",
+        "name": "Write To a File",
+        "filename": "E:\\DevelopmentWorkspaces\\node-red-0.13.3\\amitava_projects\\tweets.txt",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 1260,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "afc234d650834f9e",
+        "type": "debug",
+        "z": "c07dd58909ab57c9",
+        "name": "Write Original Msg",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1170,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "9ca676cc8100a003",
+        "type": "function",
+        "z": "c07dd58909ab57c9",
+        "name": "Output Formation",
+        "func": "var $commonWords = ['i','a','about','an','and','are','as','at','be','by','com','de','en','for','from','how','in','is','it','la','of','on','or','that','the','this','to','was','what','when','where','who','will','with','und','the','www'];\nwordsToLookFor = global.get(\"wordsToLookFor\");\nmsg.wordsToLookFor = wordsToLookFor;\nvar a=\"\";\nvar count=global.get(\"count\")+1;\nglobal.set(\"count\", count);\n\nvar metadata = \"Orig Msg: \"+msg.tweet.created_at+\n\", From User: \"+msg.tweet.user.screen_name+\n\", followers: \"+msg.tweet.user.followers_count+\n\", sentiment score: \"+msg.sentiment.score+\n\", topic: \"+msg.topic;\n\nvar $text = msg.payload;\n\n//Prepare text for keyword extraction\n//Remove hashtags and texts associated with other characters\nvar regexp = new RegExp('#([^\\\\s]*)','g');\nvar hashtags = $text.match(regexp);\n$text = $text.replace(regexp, ' ');\n//Remove @tags and texts associated with other characters\nregexp = new RegExp('\\bhttps?:\\/\\/\\S+','g');\nvar links = $text.match(/(?:https?|ftp):\\/\\/[\\n\\S]+/gi);\n//var links = $text.match(/\\bhttps?:\\/\\/\\S+/gi);\n//var links = $text.match(regexp);\n$text = $text.replace(/(?:https?|ftp):\\/\\/[\\n\\S]+/gi, ' ');\n//Remove URIs\nregexp = new RegExp('@([^\\\\s]*)','g');\nvar ATs = $text.match(regexp);\n$text = $text.replace(regexp, ' ');\n\nmsgText=$text;\nmsgText = msgText.replace(/[^$,'\\w\\d ]/g, '');\n\n// Convert to lowercase\n$text = $text.toLowerCase();\n// replace unnesessary chars. leave only chars, numbers and space\nvar puretext = $text.replace(/[^\\w\\d ]/g, '');\n$text = puretext;\nvar words = $text.split(' ');\n\n// remove $commonWords\nkeywords1 = words.filter(function (word) {\n    return $commonWords.indexOf(word) === -1;\n});\n\nkeywords = [];\nfor (var i = 0; i < keywords1.length; i++) {\n    if (keywords.indexOf(keywords1[i])==-1) {\n      keywords.push(keywords1[i]);\n    }\n  }\n\nkeywords = [];\nfor (var j = wordsToLookFor.length - 1; j >= 0; --j) {\n    if ($text.indexOf(wordsToLookFor[j]) != -1) {\n         // str contains wordsToLookFor[i]\n         keywords.push(wordsToLookFor[j]);\n    }\n}\n\nif (msg.payload.includes(\"RT @\")) {\n   a=a+\";\"+\"Retweet\";\n} \nif (msg.payload.includes(\"Books\")) {\n   a=a+\";\"+\"Books\";\n} \n\nif (links==null) {\n    links={};\n}\nif (msg.payload.includes(\"http\")) {\n   links1=msg.tweet.entities.urls;\n  for (i = 0; i < links1.length; i++) {\n      links.push(links1[i].url);\n      links.push(links1[i].expanded_url);\n  }\n} \n\nvar output={};\noutput.msgNumber=count;\nvar create_dt=new Date(msg.tweet.created_at);\nlet ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(create_dt);\nlet mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(create_dt);\nlet da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(create_dt);\noutput.timestamp=da+\"-\"+mo+\"-\"+ye;\noutput.topic=msg.topic;\noutput.sentimentScore=msg.sentiment.score;\noutput.links=links;\noutput.extra=\"msg: \"+count+\" : About: \"+a;\noutput.metadata=metadata;\noutput.keywords=keywords;\noutput.source=msg.tweet.source;\noutput.puretext=puretext\noutput.hashtags=hashtags;\noutput.ATs=ATs;\n//Recreate Message Text\nif (output.links!=null) {\ntext=\"Links: \"\n  for (i = 0; i < output.links.length; i++) {\n      text=text+output.links[i]+\" |\"\n  }\nmsgText = msgText+\" \"+text;\n} \nif (output.hashtags!=null) {\ntext=\"HashTags: \"\n  for (i = 0; i < output.hashtags.length; i++) {\n      text=text+output.hashtags[i]+\" \"\n  }\n  for (i = 0; i < output.keywords.length; i++) {\n      text=text+\"#\"+output.keywords[i]+\" \"\n  }\nmsgText = msgText+\" \"+text;\n} \nif (output.ATs!=null) {\ntext=\"People: \"\n  for (i = 0; i < output.ATs.length; i++) {\n      text=text+output.ATs[i]+\" \"\n  }\nmsgText = msgText+\" \"+text;\n} \n//Remove multiple whitespaces\nmsgText = msgText.replace(/^\\s+|\\s+$|\\s+(?=\\s)/g, \"\")\noutput.msgText=msgText+\" source: \"+output.source;\nmsg.output=output;\n\n\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set (\"count\",0);",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 380,
+        "wires": [
+            [
+                "0aba4e0102057264",
+                "563c506129ed74d7",
+                "b98be9689273d9c0"
+            ]
+        ]
+    },
+    {
+        "id": "563c506129ed74d7",
+        "type": "debug",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1250,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "3b80248db4f394ca",
+        "type": "inject",
+        "z": "c07dd58909ab57c9",
+        "name": "for DEBUG",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            },
+            {
+                "p": "tweet",
+                "v": "{\"created_at\":\"Sun Sep 05 20:20:01 +0000 2021\",\"id\":1434612301487874000,\"id_str\":\"1434612301487874048\",\"text\":\"RT @sparrigan: Just realized that I've never really plugged this great book that gives a zero-maths intro to the deep core concepts behind…\",\"source\":\"<a href=\\\"http://twitter.com/download/android\\\" rel=\\\"nofollow\\\">Twitter for Android</a>\",\"truncated\":true,\"in_reply_to_status_id\":null,\"in_reply_to_status_id_str\":null,\"in_reply_to_user_id\":null,\"in_reply_to_user_id_str\":null,\"in_reply_to_screen_name\":null,\"user\":{\"id\":379710125,\"id_str\":\"379710125\",\"name\":\"Oday オデー\",\"screen_name\":\"zeeroday\",\"location\":\"Orbital Space \",\"url\":null,\"description\":\"Entangled between @UNIGE_en & @CERN ت. Serial learner @CERNideasquare. Quantum Tech, Art, Innovation. Levantine 🇱🇧🇨🇭\",\"translator_type\":\"regular\",\"protected\":false,\"verified\":false,\"followers_count\":407,\"friends_count\":2312,\"listed_count\":14,\"favourites_count\":2910,\"statuses_count\":4492,\"created_at\":\"Sun Sep 25 12:35:20 +0000 2011\",\"utc_offset\":null,\"time_zone\":null,\"geo_enabled\":true,\"lang\":null,\"contributors_enabled\":false,\"is_translator\":false,\"profile_background_color\":\"DAE5AB\",\"profile_background_image_url\":\"http://abs.twimg.com/images/themes/theme1/bg.png\",\"profile_background_image_url_https\":\"https://abs.twimg.com/images/themes/theme1/bg.png\",\"profile_background_tile\":true,\"profile_link_color\":\"02A3B9\",\"profile_sidebar_border_color\":\"000000\",\"profile_sidebar_fill_color\":\"87313F\",\"profile_text_color\":\"FA154B\",\"profile_use_background_image\":true,\"profile_image_url\":\"http://pbs.twimg.com/profile_images/996969960873320448/j7BrSYxE_normal.jpg\",\"profile_image_url_https\":\"https://pbs.twimg.com/profile_images/996969960873320448/j7BrSYxE_normal.jpg\",\"profile_banner_url\":\"https://pbs.twimg.com/profile_banners/379710125/1577792747\",\"default_profile\":false,\"default_profile_image\":false,\"following\":null,\"follow_request_sent\":null,\"notifications\":null,\"withheld_in_countries\":[]},\"geo\":null,\"coordinates\":null,\"place\":null,\"contributors\":null,\"is_quote_status\":false,\"extended_tweet\":{\"full_text\":\"Full Text: $ASTA ONLY A MATTER @Amitava OF TIME...ðŸ¤©ðŸ‘‡ðŸ‘‡\\n\\n#QuantumComputing #greatdeals #cybersecurity #patents #ToTheMoon\\n\\n$INQD $KYNC $EEENF $GBHL $CHNC\\n\\n@Stocktwits @runners_stock @Ultra_Calls @cdntradegrljenn @S3xyRhinna @HarisRad88 @BrianWalton78 @wsbmod @stockballa @pennystockmomo @WSBChairman RT @sparrigan: https://amitava.abcd.com patent,solution,efficient Just realized that I've never really plugged this great book that gives a zero-maths intro to the deep core http://abcd.defg.net concepts behind…\",\"display_text_range\":[0,239],\"entities\":{\"hashtags\":[{\"text\":\"fund\",\"indices\":[155,160]},{\"text\":\"technology\",\"indices\":[161,172]},{\"text\":\"investment\",\"indices\":[173,184]},{\"text\":\"biotechnology\",\"indices\":[185,199]},{\"text\":\"quantumcomputing\",\"indices\":[200,217]},{\"text\":\"artifialintelligence\",\"indices\":[218,239]}],\"urls\":[],\"user_mentions\":[],\"symbols\":[],\"media\":[{\"id\":1435266883654127600,\"id_str\":\"1435266883654127616\",\"indices\":[240,263],\"media_url\":\"http://pbs.twimg.com/media/E-sXoFYWEAA1-N9.jpg\",\"media_url_https\":\"https://pbs.twimg.com/media/E-sXoFYWEAA1-N9.jpg\",\"url\":\"https://t.co/aMCLT8I3Jh\",\"display_url\":\"pic.twitter.com/aMCLT8I3Jh\",\"expanded_url\":\"https://twitter.com/Billioneurons/status/1435266894706221074/photo/1\",\"type\":\"photo\",\"sizes\":{\"thumb\":{\"w\":150,\"h\":150,\"resize\":\"crop\"},\"small\":{\"w\":680,\"h\":680,\"resize\":\"fit\"},\"medium\":{\"w\":1080,\"h\":1080,\"resize\":\"fit\"},\"large\":{\"w\":1080,\"h\":1080,\"resize\":\"fit\"}}}]},\"extended_entities\":{\"media\":[{\"id\":1435266883654127600,\"id_str\":\"1435266883654127616\",\"indices\":[240,263],\"media_url\":\"http://pbs.twimg.com/media/E-sXoFYWEAA1-N9.jpg\",\"media_url_https\":\"https://pbs.twimg.com/media/E-sXoFYWEAA1-N9.jpg\",\"url\":\"https://t.co/aMCLT8I3Jh\",\"display_url\":\"pic.twitter.com/aMCLT8I3Jh\",\"expanded_url\":\"https://twitter.com/Billioneurons/status/1435266894706221074/photo/1\",\"type\":\"photo\",\"sizes\":{\"thumb\":{\"w\":150,\"h\":150,\"resize\":\"crop\"},\"small\":{\"w\":680,\"h\":680,\"resize\":\"fit\"},\"medium\":{\"w\":1080,\"h\":1080,\"resize\":\"fit\"},\"large\":{\"w\":1080,\"h\":1080,\"resize\":\"fit\"}}}]}},\"quote_count\":0,\"reply_count\":0,\"retweet_count\":0,\"favorite_count\":0,\"entities\":{\"hashtags\":[],\"urls\":[{\"url\":\"https://t.co/fEbtlcPPIo\",\"expanded_url\":\"https://youtu.be/IhledtjnJPc\",\"display_url\":\"youtu.be/IhledtjnJPc\",\"indices\":[70,93]}],\"user_mentions\":[{\"screen_name\":\"sparrigan\",\"name\":\"Nicholas Harrigan\",\"id\":340219763,\"id_str\":\"340219763\",\"indices\":[3,13]}],\"symbols\":[]},\"favorited\":false,\"retweeted\":false,\"filter_level\":\"low\",\"lang\":\"en\",\"timestamp_ms\":\"1630873201139\"}",
+                "vt": "json"
+            },
+            {
+                "p": "lang",
+                "v": "en",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "DEBUG",
+        "payload": "RT @ipfconline1:  patent,solution,efficient remarkable #Robots learn faster with quantum technology   https://t.co/0XAbm6KgOj v/ @univienna  #QuantumComputing #AI #MachineLearning and it is so brave really!…RT @philjaurigue: Yes. Bad actors are always devising new ways to breach systems. Choose your #CyberSecurity partner wisely. @sabreonpoint…Understand #QuantumComputing and how it will transform business in this two-course program from MIT xPRO. Learn from MIT fac…Empowering #QuantumJobs : Top Five Skills For #QuantumCoding That Will Be In Demand I India Times #India… https://t.co/10dNtfzDVj  The next big step in computing will be so complex that we will need computers to act as the UI, where we ask for outcomes…I think the combination of tissue engineering and AI will play a big role in the future of personalized medicine.… experimental",
+        "payloadType": "str",
+        "x": 140,
+        "y": 740,
+        "wires": [
+            [
+                "e60d108334866f7a",
+                "64a80bbd44214cee"
+            ]
+        ]
+    },
+    {
+        "id": "ac27ffb5.53d8",
+        "type": "switch",
+        "z": "c07dd58909ab57c9",
+        "name": "Positive and Neutral Tweets only",
+        "property": "sentiment.score",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "lt",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 3,
+        "x": 700,
+        "y": 380,
+        "wires": [
+            [
+                "9ca676cc8100a003"
+            ],
+            [
+                "9ca676cc8100a003"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "d63b18d.f29c4e8",
+        "type": "sentiment",
+        "z": "c07dd58909ab57c9",
+        "name": "Analyse Sentiment",
+        "property": "payload",
+        "x": 410,
+        "y": 380,
+        "wires": [
+            [
+                "ac27ffb5.53d8",
+                "afc234d650834f9e"
+            ]
+        ]
+    },
+    {
+        "id": "e60d108334866f7a",
+        "type": "switch",
+        "z": "c07dd58909ab57c9",
+        "name": "english only",
+        "property": "lang",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "en",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 370,
+        "y": 100,
+        "wires": [
+            [
+                "3950df8cd36d4c68"
+            ]
+        ]
+    },
+    {
+        "id": "dcce60b1f7756a1a",
+        "type": "json",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "property": "output",
+        "action": "str",
+        "pretty": true,
+        "x": 970,
+        "y": 500,
+        "wires": [
+            [
+                "cf122e2076286d9c"
+            ]
+        ]
+    },
+    {
+        "id": "cf122e2076286d9c",
+        "type": "function",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "func": "msg.payload=msg.output;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1100,
+        "y": 500,
+        "wires": [
+            [
+                "d1812161cd998499"
+            ]
+        ]
+    },
+    {
+        "id": "3950df8cd36d4c68",
+        "type": "switch",
+        "z": "c07dd58909ab57c9",
+        "name": "Reject retweets",
+        "property": "tweet",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "hask",
+                "v": "retweeted_status",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 560,
+        "y": 100,
+        "wires": [
+            [],
+            [
+                "6bad65acb02ec681"
+            ]
+        ]
+    },
+    {
+        "id": "64a80bbd44214cee",
+        "type": "file in",
+        "z": "c07dd58909ab57c9",
+        "name": "wordsToLookFor",
+        "filename": "E:\\DevelopmentWorkspaces\\gitProjects\\node-red-flows\\keywords.txt",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 460,
+        "y": 880,
+        "wires": [
+            [
+                "cc4e3e1f0a5078b8"
+            ]
+        ]
+    },
+    {
+        "id": "cc4e3e1f0a5078b8",
+        "type": "change",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "wordsToLookFor",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 500,
+        "y": 980,
+        "wires": [
+            [
+                "bb2b4db81c517fa1"
+            ]
+        ]
+    },
+    {
+        "id": "bb2b4db81c517fa1",
+        "type": "function",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "func": "abc=global.get(\"wordsToLookFor\")\n//abc=String(JSON.stringify(global.get(\"abc\")));\nmsg.abc=abc;\nabc1 = abc.split(\",\");\nmsg.abc1=abc1;\nglobal.set(\"wordsToLookFor\", abc1)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [
+            {
+                "var": "abc",
+                "module": "abc"
+            }
+        ],
+        "x": 740,
+        "y": 980,
+        "wires": [
+            [
+                "f897812eb1c345ed"
+            ]
+        ]
+    },
+    {
+        "id": "f897812eb1c345ed",
+        "type": "debug",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1100,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "6bad65acb02ec681",
+        "type": "function",
+        "z": "c07dd58909ab57c9",
+        "name": "Retrieve Full Texts",
+        "func": "if (msg.tweet.truncated) {\n    msg.payload=msg.tweet.extended_tweet.full_text;\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 160,
+        "wires": [
+            [
+                "5da731a479d445e1"
+            ]
+        ]
+    },
+    {
+        "id": "5da731a479d445e1",
+        "type": "switch",
+        "z": "c07dd58909ab57c9",
+        "name": "Select Message > 30 characters",
+        "property": "$length(msg.payload)\t\t",
+        "propertyType": "jsonata",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "30",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 440,
+        "y": 240,
+        "wires": [
+            [
+                "d63b18d.f29c4e8"
+            ]
+        ]
+    },
+    {
+        "id": "979a5125de1c7ff0",
+        "type": "comment",
+        "z": "c07dd58909ab57c9",
+        "name": "Just for DEBUG purpose",
+        "info": "",
+        "x": 1190,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "0aba4e0102057264",
+        "type": "switch",
+        "z": "c07dd58909ab57c9",
+        "name": "Has Keywords of my Interest",
+        "property": "output.keywords",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nempty"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 680,
+        "y": 480,
+        "wires": [
+            [
+                "dcce60b1f7756a1a",
+                "96983c09357ff784",
+                "093196af91b7593f"
+            ],
+            [
+                "8bba721d816714b2"
+            ]
+        ]
+    },
+    {
+        "id": "d5069819d8bbba55",
+        "type": "debug",
+        "z": "c07dd58909ab57c9",
+        "name": "Missed Messages",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "{\"Missed Message\" : msg}",
+        "targetType": "jsonata",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1210,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "8bba721d816714b2",
+        "type": "switch",
+        "z": "c07dd58909ab57c9",
+        "name": "Has Links",
+        "property": "output.links",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nempty"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 640,
+        "y": 560,
+        "wires": [
+            [
+                "dcce60b1f7756a1a",
+                "96983c09357ff784",
+                "093196af91b7593f"
+            ],
+            [
+                "d5069819d8bbba55"
+            ]
+        ]
+    },
+    {
+        "id": "96983c09357ff784",
+        "type": "function",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "func": "msg.payload=msg.output.puretext;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1100,
+        "y": 580,
+        "wires": [
+            [
+                "1b903d6c1df2bf20"
+            ]
+        ]
+    },
+    {
+        "id": "1b903d6c1df2bf20",
+        "type": "file",
+        "z": "c07dd58909ab57c9",
+        "name": "Write To WordCloud File",
+        "filename": "E:\\DevelopmentWorkspaces\\node-red-0.13.3\\amitava_projects\\tweetmsgs.txt",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 1290,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d69d14bb2aac778c",
+        "type": "status",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "scope": [
+            "a70f3d08aef0d97c"
+        ],
+        "x": 970,
+        "y": 800,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "093196af91b7593f",
+        "type": "function",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "func": "links=msg.output.links;\n\n\nvar text=\"\\n\";\nfor (var i = 0; i < links.length; i++) {\n    text=text+\"- [\"+links[i]+\"](\"+links[i]+\")\\n\";\n  }\nmsg.payload=text;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1100,
+        "y": 620,
+        "wires": [
+            [
+                "66b1cc311dea8dc4"
+            ]
+        ]
+    },
+    {
+        "id": "66b1cc311dea8dc4",
+        "type": "file",
+        "z": "c07dd58909ab57c9",
+        "name": "Write To Tweeter Links File",
+        "filename": "E:\\DevelopmentWorkspaces\\gitProjects\\quantumComputingPublic\\links\\tweeter-links.md",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 1300,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bd4bc14da76d7aa5",
+        "type": "twitter out",
+        "z": "c07dd58909ab57c9",
+        "d": true,
+        "twitter": "",
+        "name": "Tweet",
+        "x": 1140,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "b98be9689273d9c0",
+        "type": "function",
+        "z": "c07dd58909ab57c9",
+        "name": "",
+        "func": "msg.payload=msg.output.msgText.substring(0,278);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1040,
+        "y": 300,
+        "wires": [
+            [
+                "bd4bc14da76d7aa5"
+            ]
+        ]
+    }
+]
